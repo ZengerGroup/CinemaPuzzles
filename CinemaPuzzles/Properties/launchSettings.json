@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CinemaPuzzles": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Code\\TestingFS\\CinemaPuzzles\\Input\\TESTORDER.csv\""
+    }
+  }
+}
