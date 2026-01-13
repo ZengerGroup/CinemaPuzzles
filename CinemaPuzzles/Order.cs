@@ -22,6 +22,7 @@ namespace CinemaPuzzles
         public void AddLineItem(LineItem lineItem)
         {
             LineItem[] lineItems = new LineItem[LineItems.Length + 1];
+            for(int i = 0; i <  LineItems.Length; i++) { lineItems[i] = LineItems[i];  }
             lineItems[^1] = lineItem;
             LineItems = lineItems;
         }

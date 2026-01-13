@@ -9,6 +9,7 @@ namespace CinemaPuzzles
     internal class Batch
     {
         public Order[] Orders;
+        List<Order[]> SortedBatches;
 
         public Batch(string csvPath)
         {
@@ -31,7 +32,10 @@ namespace CinemaPuzzles
             for(int i = 0; i < unparsedLines.Count; i++)
             {
                 int matchedIndex = -1;
-                for (int j = 0; j < parsedOrders.Count; j++) if (unparsedLines[i].OrderNumber == parsedOrders[j].OrderNumber) matchedIndex = j;
+                for (int j = 0; j < parsedOrders.Count; j++) 
+                { 
+                    if (unparsedLines[i].OrderNumber == parsedOrders[j].OrderNumber) matchedIndex = j;
+                }
                 if (matchedIndex >= 0) parsedOrders[matchedIndex].AddLineItem(unparsedLines[i]);
                 else parsedOrders.Add(new Order(unparsedLines[i]));
             }

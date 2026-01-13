@@ -24,5 +24,14 @@ namespace CinemaPuzzles
             Zip = zip;
             Country = country;
         }
+
+        public string[] GenerateAddressBlock()
+        {
+            return [
+                Name,
+                Street,
+                String.Format("{0} {1} {2}", City, State, Zip)
+            ];
+        }
     }
 }
