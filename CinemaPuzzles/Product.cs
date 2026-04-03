@@ -23,5 +23,13 @@ namespace CinemaPuzzles
             Size = splitSku[2];
             Quantity = qty;
         }
+        public Product(Product p)
+        {
+            FullSku = p.FullSku;
+            ShortSku = p.ShortSku;
+            Pieces = p.Pieces;
+            Size = p.Size;
+            Quantity = p.Quantity;
+        }
     }
 }

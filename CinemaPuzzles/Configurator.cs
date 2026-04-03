@@ -11,6 +11,7 @@ namespace CinemaPuzzles
     {
         public static string LogPath = ConfigurationManager.AppSettings["LogPath"];
         public static string ErrorBin = ConfigurationManager.AppSettings["ErrorBin"];
-
+        public static string TravelerOutput = ConfigurationManager.AppSettings["TravelerOutput"];
+        public static string ReportPath = ConfigurationManager.AppSettings["ReportPath"];
     }
 }

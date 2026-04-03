@@ -37,52 +37,7 @@ namespace CinemaPuzzles
                 }
                 pos = PrintOrderSection(batchOrders[i], pos, gfx);
             }
-            document.Save(@"C:\Code\TestingFS\output2.pdf");
-            document.Close();
-        }
-        public TravelerBuilder(Order[] batchOrders, bool testing)
-        {
-            //Stuff and things
-            PdfDocument document = new PdfDocument();
-            PdfPage workingPage = new PdfPage();
-            document.AddPage(workingPage);
-            var gfx = XGraphics.FromPdfPage(document.Pages[0]);
-            gfx.DrawLine(new XPen(XColors.Red, 2), 0, 150.0d, document.Pages[0].Width, 150.0d);
-            gfx.DrawLine(new XPen(XColors.Red, 2), 0, 300.0d, document.Pages[0].Width, 300.0d);
-            gfx.DrawLine(new XPen(XColors.Red, 2), 0, 450.0d, document.Pages[0].Width, 450.0d);
-            gfx.DrawLine(new XPen(XColors.Red, 2), 0, 600.0d, document.Pages[0].Width, 600.0d);
-            gfx.DrawLine(new XPen(XColors.Red, 2), 0, 750.0d, document.Pages[0].Width, 750.0d);
-            PrintBarcode(gfx, 0, "123456");
-            PrintBarcode(gfx, 1, "123456");
-            PrintBarcode(gfx, 2, "123456");
-            PrintBarcode(gfx, 3, "123456");
-            PrintBarcode(gfx, 4, "123456");
-            document.Save(@"C:\Code\TestingFS\output2.pdf");
-            document.Close();
-        }
-
-        public TravelerBuilder(bool testing)
-        {
-            PdfDocument document = new PdfDocument();
-            PdfPage workingPage = new PdfPage();
-            document.AddPage(workingPage);
-            var gfx = XGraphics.FromPdfPage(document.Pages[0]);
-            gfx.DrawString("First Print", new XFont("Verdana", 12), XBrushes.Black, new XRect(100.0d, 100.0d, 100.0d, 0.0d));
-            gfx.DrawString("Second Print", new XFont("Verdana", 12), XBrushes.Black, new XRect(350.0d, 350.0d, 100.0d, 0.0d));
-            gfx.DrawString("Third Print", new XFont("Verdana", 12), XBrushes.Black, new XRect(500.0d, 100.0d, 100.0d, 0.0d));
-            gfx.DrawString("Fourth Print", new XFont("Verdana", 12), XBrushes.Black, new XRect(100.0d, 500.0d, 100.0d, 0.0d));
-            gfx.DrawString("Fifth Print", new XFont("Verdana", 12), XBrushes.Black, new XRect(50.0d, 775.0d, 100.0d, 0.0d));
-            gfx.DrawLine(new XPen(XColors.Red, 2),0, 500.0d, document.Pages[0].Width, 500.0d);
-
-
-            //PrintBarcode(document.Pages[0], 0.0d, true, "123456");
-            XPoint position = new XPoint(10.0d, 100.0d);
-            Code3of9Standard barcode = new Code3of9Standard("123456", new XSize(100, 50), CodeDirection.LeftToRight);
-            barcode.TextLocation = TextLocation.Below;
-            barcode.Text = "123456";
-            gfx.DrawBarCode(barcode, XBrushes.Black, new XPoint(350.0d, 50.0d));
-
-            document.Save(@"C:\Code\TestingFS\output1.pdf");
+            document.Save(Path.Combine(Configurator.TravelerOutput, String.Format("CinemaPuzzleTravelers_{0}.pdf", DateTime.Now.ToString("MMddyy"))));
             document.Close();
         }
 
