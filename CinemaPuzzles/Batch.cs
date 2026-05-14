@@ -11,27 +11,40 @@ namespace CinemaPuzzles
         public Order[] Orders;
         public List<Product> Products;
         List<Order[]> SortedBatches;
+        List<string[]> ErrorRows;
 
         public Batch(string csvPath)
         {
             if (!File.Exists(csvPath)) Logger.ErrorExit(["Unable to access CSV file."], 400);
             Products = new List<Product>();
-            Orders = GenerateOrderArray(csvPath);
+            Orders = GetOrderArray(csvPath);
+            ErrorRows = new List<string[]>();
         }
 
-        private Order[] GenerateOrderArray(string csvPath)
+        private Order[] GetOrderArray(string csvPath)
         {
-            StreamReader sr = new StreamReader(csvPath);
-            List<LineItem> lineItems = new List<LineItem>();
-            sr.ReadLine();
-            while (!sr.EndOfStream) 
+            StreamReader sReader = new StreamReader(csvPath);
+            List<LineItem> lines = new List<LineItem>();
+            string[] headers = sReader.ReadLine().Split(",");
+            if (headers.Length != 30) Logger.ErrorExit(["Header row not formatted properly."], 399);
+            while (!sReader.EndOfStream)
             {
-                LineItem lineItem = new LineItem(sr.ReadLine());
-                lineItems.Add(lineItem);
+                string[] splitRow = sReader.ReadLine().Split(",");
+                for (int i = 0; i < splitRow.Length; i++) splitRow[i] = splitRow[i].Replace("\"", "");
+
+                if (splitRow[15] != "Line Item") { Logger.WriteLog(splitRow[15], false); continue; }
+                else if (splitRow.Length != 30 || !Int32.TryParse(splitRow[18], out _))
+                {
+                    Logger.WriteLog("Found bad row.", false);
+                    ErrorRows.Add(splitRow);
+                    continue;
+                }
+                LineItem lineItem = new LineItem(splitRow);
+                lines.Add(lineItem);
                 AddProduct(lineItem.LineProduct);
-            } 
-            sr.Close();
-            return ParseOrders(lineItems);
+            }
+            sReader.Close();
+            return ParseOrders(lines);
         }
         private Order[] ParseOrders(List<LineItem> unparsedLines)
         {

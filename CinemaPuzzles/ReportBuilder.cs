@@ -39,8 +39,11 @@ namespace CinemaPuzzles
         Dictionary<string, string> PuzzleSize = new Dictionary<string, string>()
         {
             {"S", "20 x 16" },
+            {"s", "20 x 16" },
             {"L", "27 x 12" },
-            {"B", "24 x 18" }
+            {"l", "27 x 12" },
+            {"B", "24 x 18" },
+            {"b", "24 x 18" }
         };
     }
 }

@@ -11,81 +11,128 @@ using PdfSharp.Charting;
 using PdfSharp.Drawing;
 using PdfSharp.Drawing.BarCodes;
 using PdfSharp.Pdf;
+using PdfSharp.Pdf.IO;
 
 namespace CinemaPuzzles
 {
     internal class TravelerBuilder
     {
-        public TravelerBuilder(Order[] batchOrders)
+        //New constructor.
+        public TravelerBuilder(Order[] orders, bool individuals)
         {
-            //Stuff and things
+            for(int i = 0; i < orders.Length; i++) if (!GenerateIndividualTraveler(orders[i])) Logger.WriteLog("Failed to generate traveler for order # {0}", false, orders[i].OrderNumber);
+            if(!AssembleTravelers()) Logger.WriteLog("Failed to assemble pdfs.", false);
+        }
+        //New top level functionality.
+        private bool GenerateIndividualTraveler(Order order)
+        {
             PdfDocument document = new PdfDocument();
-            PdfPage workingPage = new PdfPage();
-            document.AddPage(workingPage);
-            var gfx = XGraphics.FromPdfPage(document.Pages[0]);
-            PrintHeader(gfx);
-            int pos = 0;
-            for(int  i = 0; i < batchOrders.Length; i++)
+            //6 line item sections per page.
+            int pageCount = order.LineItems.Length / 6;
+            if (order.LineItems.Length % 6 != 0) pageCount++;
+            for (int page = 0; page < pageCount; page++) PrintPage(document, order, page, pageCount,
+                order.LineItems[(page * 6)..(((page + 1) * 6 > order.LineItems.Length) ? order.LineItems.Length :  (page + 1) * 6)]);
+            try
             {
-                if(pos > 4)
+                document.Save(Path.Combine(Configurator.TravelerAssembly, String.Format("{0}.pdf",order.OrderNumber)));
+                document.Close();
+                return true;
+            }
+            catch (Exception e)
+            {
+                Logger.WriteLog(e.Message, false);
+                return false;
+            }
+        }
+        private bool AssembleTravelers()
+        {
+            string[] pdfPaths = Directory.GetFiles(Configurator.TravelerAssembly);
+            PdfDocument AssembledOutput = new PdfDocument();
+            try
+            {
+                for(int i = 0; i < pdfPaths.Length; i++)
                 {
-                    pos = 0;
-                    workingPage = new PdfPage();
-                    document.AddPage(workingPage);
-                    gfx = XGraphics.FromPdfPage(document.Pages[^1]);
-                    PrintHeader(gfx);
+                    PdfDocument tempPdf = new PdfDocument();
+                    tempPdf = PdfReader.Open(pdfPaths[i], PdfDocumentOpenMode.Import);
+                    for (int page = 0; page < tempPdf.Pages.Count; page++) AssembledOutput.AddPage(tempPdf.Pages[page]);
+                    if (tempPdf.PageCount % 2 != 0) AssembledOutput.AddPage(new PdfPage());
+                    tempPdf.Close();
                 }
-                pos = PrintOrderSection(batchOrders[i], pos, gfx);
+                AssembledOutput.Save(Path.Combine(Configurator.TravelerOutput, String.Format("CinemaPuzzlesBatch_{0}.pdf", DateTime.Now.ToString("ddMMyy"))));
+                AssembledOutput.Close();
+                for(int i = 0; i < pdfPaths.Length; i++) File.Delete(pdfPaths[i]);
+                return true;
             }
-            document.Save(Path.Combine(Configurator.TravelerOutput, String.Format("CinemaPuzzleTravelers_{0}.pdf", DateTime.Now.ToString("MMddyy"))));
-            document.Close();
-        }
-
-        private int PrintOrderSection(Order order, int pos, XGraphics gfx)
-        {
-            double[] yPos = [200.0d, 350.0d, 500.0d, 650.0d, 800.0d];
-            PrintBarcode(gfx, pos, order.OrderNumber);
-            PrintShippingAddress(gfx, pos, order.LineItems[0].OrderAddress.GenerateAddressBlock());
-            pos = PrintProductList(gfx, pos, order.LineItems);
-            gfx.DrawLine(new XPen(XColors.Black, 2), 10.0d, yPos[pos], 605.0d, yPos[pos]);
-            return pos + 1;
-        }
-        private void PrintBarcode(XGraphics gfx, int pos, string orderNum)
-        {
-            double[] yPos = [ 100.0d, 250.0d, 400.0d, 550.0d, 700.0d];
-            double xPos;
-            if (pos % 2 == 0) xPos = 25.0d;
-            else xPos = 485.0d;
-            Code3of9Standard barcode = new Code3of9Standard(orderNum, new XSize(100, 50), CodeDirection.LeftToRight);
-            barcode.TextLocation = TextLocation.Below;
-            barcode.Text = orderNum;
-            gfx.DrawBarCode(barcode, XBrushes.Black, new XPoint(xPos, yPos[pos]));
-        }
-        private int PrintProductList(XGraphics gfx, int pos, LineItem[] products)
-        {
-            double[] yPos = [70.0d, 220.0d, 370.0d, 520.0d, 670.0d];
-            double xPos = 250.0d;
-            for(int i = 0; i < products.Length; i++)
+            catch (Exception e)
             {
-                string orderLine = String.Format("{0} x {1}", products[i].LineProduct.FullSku, products[i].LineProduct.Quantity);
-                gfx.DrawString(orderLine, new XFont("Verdana", 12), XBrushes.Black, new XRect(xPos, (yPos[pos] + i * 12.0d), 100.0d, 0.0d));
+                Logger.WriteLog(e.Message, false);
+                return false;
             }
-            return (products.Length > 8) ? pos + 1 : pos;
         }
-        private void PrintShippingAddress(XGraphics gfx, int pos, string[] addressBlock)
+        //New draw functions
+        private void PrintPage(PdfDocument document, Order order, int pageNumber, int pageCount, LineItem[] lineItems)
         {
-            double[] yPos = [100.0d, 260.0d, 410.0d, 560.0d, 710.0d];
-            double xPos;
-            if (pos % 2 == 0) xPos = 450.0d;
-            else xPos = 25.0d;
+            document.AddPage(new PdfPage());
+            var graphics = XGraphics.FromPdfPage(document.Pages[^1]);
+            PrintHeader(graphics, order, pageNumber, pageCount);
+            for (int i = 0; i < lineItems.Length; i++) PrintLineItem(graphics, i, lineItems[i]);
+        }
+        private void PrintHeader(XGraphics graphics, Order order, int pageNumber, int pageCount)
+        {
+            graphics.DrawString("Cinema Puzzles Batch", new XFont("Verdana", 18), XBrushes.Black, new XRect(25.0d, 40.0d, 160.0d, 0.0d));
+            graphics.DrawString(DateTime.Now.ToString("d"), new XFont("Verdana", 18), XBrushes.Black, new XRect(25.0d, 60.0d, 160.0d, 0.0d), XStringFormats.Center);
+            graphics.DrawString(String.Format("Page {0} of {1}", pageNumber + 1, pageCount), new XFont("Verdana", 18), XBrushes.Black, new XRect(25.0d, 85.0d, 160.0d, 0.0d), XStringFormats.Center);
+            PrintShippingAddress(graphics, order.LineItems[0].OrderAddress.GenerateAddressBlock());
+            PrintOrderBarcode(graphics, order.OrderNumber);
+            graphics.DrawLine(new XPen(XColors.Black, 2), 10.0d, 125.0d, 605.0d, 125.0d);
+        }
+        private void PrintOrderBarcode(XGraphics graphics, string orderNumber)
+        {
+            Code3of9Standard barcode = new Code3of9Standard(orderNumber, new XSize(100, 50), CodeDirection.LeftToRight);
+            graphics.DrawString(String.Format("Order # {0}", orderNumber), new XFont("Verdana", 18), XBrushes.Black, new XRect(250.0d, 30.0d, 100.0d, 0.0d), XStringFormats.Center);
+            graphics.DrawBarCode(barcode, XBrushes.Black, new XPoint(250.0d, 55.0d));
+        }
+        private void PrintShippingAddress(XGraphics graphics, string[] addressBlock)
+        {
             for (int i = 0; i < addressBlock.Length; i++)
-                gfx.DrawString(addressBlock[i], new XFont("Verdana", 12), XBrushes.Black, new XRect(xPos, (yPos[pos] + i * 12.0d), 100.0d, 0.0d));
+                graphics.DrawString(addressBlock[i], new XFont("Verdana", 12), XBrushes.Black, new XRect(390.0d, (45.0d + i * 12.0d), 100.0d, 0.0d));
         }
-        private void PrintHeader(XGraphics gfx)
+        private void PrintLineItem(XGraphics graphics, int itemNumber, LineItem item)
         {
-            gfx.DrawString("Cinema Puzzles Batch", new XFont("Verdana", 18), XBrushes.Black, new XRect(50.0d, 25.0d, 100.0d, 0.0d));
-            gfx.DrawString(DateTime.Now.ToString("d"), new XFont("Verdana", 18), XBrushes.Black, new XRect(500.0d, 25.0d, 100.0d, 0.0d));
-            gfx.DrawLine(new XPen(XColors.Black, 2), 10.0d, 45.0d, 605.0d, 45.0d);
+            double startPosition = 125.0d + (itemNumber * 100.0d);
+            int leftRight = itemNumber % 2;
+            PrintSkuBarcode(graphics, item.LineProduct.FullSku, (leftRight == 0) ? 30.0d : 390.0d,  startPosition + 10.0d);
+            PrintLineQuantity(graphics, item.LineProduct.Quantity, startPosition);
+            PrintLineSummary(graphics, item.LineProduct.FullSku, item.LineProduct.ItemTitle, item.LineProduct.ItemName, item.LineProduct.PuzzleSize[item.LineProduct.Size], 
+                (leftRight == 0) ? 390.0d : 30.0d, startPosition);
+            graphics.DrawLine(new XPen(XColors.Black, 2), 10.0d, startPosition + 100.0d, 605.0d, startPosition + 100.0d);
+        }
+        private void PrintSkuBarcode(XGraphics graphics, string sku, double xPos, double yPos)
+        {
+            sku = sku.ToUpper();
+            string SKU = sku.Replace("_", "%O");
+            Code3of9Standard barcode = new Code3of9Standard(SKU, new XSize(150, 50), CodeDirection.LeftToRight);
+            graphics.DrawBarCode(barcode, XBrushes.Black, new XPoint(xPos, yPos));
+            graphics.DrawString(sku, new XFont("Verdana", 10), XBrushes.Black, new XRect(xPos, yPos + 65.0d, 100.0d, 0.0d), XStringFormats.Center);
+        }
+        private void PrintLineQuantity(XGraphics graphics, int quantity, double startPosition)
+        {
+            graphics.DrawString("Quantity:", new XFont("Verdana", 12), XBrushes.Black, new XRect(250.0d, startPosition + 25.0d, 100.0d, 0.0d), XStringFormats.Center);
+            graphics.DrawString(quantity.ToString(), new XFont("Verdana", 24), XBrushes.Black, new XRect(250.0d, startPosition + 60.0d, 100.0d, 0.0d), XStringFormats.Center);
+        }
+        private void PrintLineSummary(XGraphics graphics, string sku, string itemTitle, string itemName, string sizeString, double xPos, double yPos)
+        {
+            Logger.WriteLog("Printing summary", false);
+            Logger.WriteLog("{0} - {1} - {2} - {3}", false, sku, itemTitle, itemName, sizeString);
+            graphics.DrawString(sku, new XFont("Verdana", 12), XBrushes.Black, new XRect(xPos, yPos + 30.0d, 100.0d, 0.0d));
+            graphics.DrawString(itemTitle, new XFont("Verdana", 12), XBrushes.Black, new XRect(xPos, yPos + 45.0d, 100.0d, 0.0d));
+            if(itemTitle == itemName) graphics.DrawString(sizeString, new XFont("Verdana", 12), XBrushes.Black, new XRect(xPos, yPos + 60.0d, 100.0d, 0.0d));
+            else
+            {
+                graphics.DrawString(itemName, new XFont("Verdana", 12), XBrushes.Black, new XRect(xPos, yPos + 60.0d, 100.0d, 0.0d));
+                graphics.DrawString(sizeString, new XFont("Verdana", 12), XBrushes.Black, new XRect(xPos, yPos + 75.0d, 100.0d, 0.0d));
+            }
+            
         }
     }
 }

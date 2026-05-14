@@ -12,15 +12,43 @@ namespace CinemaPuzzles
         public string OrderNumber;
         public Address OrderAddress;
 
-        public LineItem(string orderLine) 
+        public LineItem(string[] splitRow)
         {
-            string[] splitLine = orderLine.Split(',');
-            LineProduct = new Product(splitLine[2], Int32.Parse(splitLine[8]));
-            OrderNumber = splitLine[1];
-            OrderAddress = new Address(splitLine[0], splitLine[3], splitLine[4], splitLine[5], splitLine[6], splitLine[7]);
+            LineProduct = new Product(splitRow[17], Int32.Parse(splitRow[18]), splitRow[19], splitRow[20]);
+            OrderNumber = splitRow[0].Replace("#", "");
+            string name = (splitRow[4].Length > 3) ? splitRow[4] : String.Format("{0} {1}", splitRow[2], splitRow[3]);
+            OrderAddress = new Address(name, splitRow[5], splitRow[6], splitRow[7], splitRow[8], splitRow[9], splitRow[10], splitRow[11]);
         }
     }
 }
-
-//  0 ,      1     ,  2 ,     3     ,   4     ,   5       ,  6    ,        7   ,  8
-//NAME, ORDERNUMBER, SKU, ADD line 1, Add City, Add State, Add ZIP, Add country, QTY
+//CSV COLUMNS:
+//"Name"                        0
+//"Created At"                  1
+//"Shipping: First Name"        2
+//"Shipping: Last Name"         3
+//"Shipping: Name"              4
+//"Shipping: Company"           5
+//"Shipping: Address 1"         6
+//"Shipping: Address 2"         7
+//"Shipping: City"              8
+//"Shipping: Province Code"     9
+//"Shipping: Zip"               10
+//"Shipping: Country"           11
+//"Shipping: Phone"             12
+//"Row #"                       13
+//"Top Row"                     14
+//"Line: Type"                  15
+//"Line: ID"                    16
+//"Line: SKU"                   17
+//"Line: Quantity"              18
+//"Line: Title"                 19
+//"Line: Name"                  20
+//"Line: Variant ID"            21
+//"Line: Variant Title"         22
+//"Line: Product ID"            23
+//"Customer: ID"                24
+//"Customer: Email"             25
+//"Customer: Phone"             26
+//"Customer: First Name"        27
+//"Customer: Last Name"         28
+//"ID"                          29

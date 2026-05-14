@@ -14,7 +14,7 @@ namespace CinemaPuzzles
             Batch DaysBatch = new Batch(args[0]);
             //Generate 'Traveler' type file
             //TravelerBuilder fooBuilder = new TravelerBuilder(false);
-            TravelerBuilder barBuilder = new TravelerBuilder(DaysBatch.Orders);
+            TravelerBuilder barBuilder = new TravelerBuilder(DaysBatch.Orders, true);
             //Generate report csvs and send email.
             ReportBuilder repBuilder = new ReportBuilder(DaysBatch.Orders, DaysBatch.Products.ToArray() );
         }
