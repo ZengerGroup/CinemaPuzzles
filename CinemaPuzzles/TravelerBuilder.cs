@@ -18,7 +18,7 @@ namespace CinemaPuzzles
     internal class TravelerBuilder
     {
         //New constructor.
-        public TravelerBuilder(Order[] orders, bool individuals)
+        public TravelerBuilder(Order[] orders)
         {
             for(int i = 0; i < orders.Length; i++) if (!GenerateIndividualTraveler(orders[i])) Logger.WriteLog("Failed to generate traveler for order # {0}", false, orders[i].OrderNumber);
             if(!AssembleTravelers()) Logger.WriteLog("Failed to assemble pdfs.", false);
@@ -58,7 +58,7 @@ namespace CinemaPuzzles
                     if (tempPdf.PageCount % 2 != 0) AssembledOutput.AddPage(new PdfPage());
                     tempPdf.Close();
                 }
-                AssembledOutput.Save(Path.Combine(Configurator.TravelerOutput, String.Format("CinemaPuzzlesBatch_{0}.pdf", DateTime.Now.ToString("ddMMyy"))));
+                AssembledOutput.Save(Path.Combine(Configurator.TravelerOutput, String.Format("CinemaPuzzlesBatch_{0}.pdf", DateTime.Now.ToString("MMddyy"))));
                 AssembledOutput.Close();
                 for(int i = 0; i < pdfPaths.Length; i++) File.Delete(pdfPaths[i]);
                 return true;
@@ -73,15 +73,15 @@ namespace CinemaPuzzles
         private void PrintPage(PdfDocument document, Order order, int pageNumber, int pageCount, LineItem[] lineItems)
         {
             document.AddPage(new PdfPage());
-            var graphics = XGraphics.FromPdfPage(document.Pages[^1]);
+            XGraphics graphics = XGraphics.FromPdfPage(document.Pages[^1]);
             PrintHeader(graphics, order, pageNumber, pageCount);
             for (int i = 0; i < lineItems.Length; i++) PrintLineItem(graphics, i, lineItems[i]);
         }
         private void PrintHeader(XGraphics graphics, Order order, int pageNumber, int pageCount)
         {
-            graphics.DrawString("Cinema Puzzles Batch", new XFont("Verdana", 18), XBrushes.Black, new XRect(25.0d, 40.0d, 160.0d, 0.0d));
-            graphics.DrawString(DateTime.Now.ToString("d"), new XFont("Verdana", 18), XBrushes.Black, new XRect(25.0d, 60.0d, 160.0d, 0.0d), XStringFormats.Center);
-            graphics.DrawString(String.Format("Page {0} of {1}", pageNumber + 1, pageCount), new XFont("Verdana", 18), XBrushes.Black, new XRect(25.0d, 85.0d, 160.0d, 0.0d), XStringFormats.Center);
+            graphics.DrawString("Cinema Puzzles Batch", new XFont("Verdana", 18), XBrushes.Black, new XRect(25.0d, 50.0d, 160.0d, 0.0d));
+            graphics.DrawString(DateTime.Now.ToString("d"), new XFont("Verdana", 18), XBrushes.Black, new XRect(25.0d, 70.0d, 160.0d, 0.0d), XStringFormats.Center);
+            graphics.DrawString(String.Format("Page {0} of {1}", pageNumber + 1, pageCount), new XFont("Verdana", 18), XBrushes.Black, new XRect(390.0d, 30.0d, 100.0d, 0.0d));
             PrintShippingAddress(graphics, order.LineItems[0].OrderAddress.GenerateAddressBlock());
             PrintOrderBarcode(graphics, order.OrderNumber);
             graphics.DrawLine(new XPen(XColors.Black, 2), 10.0d, 125.0d, 605.0d, 125.0d);
@@ -95,17 +95,24 @@ namespace CinemaPuzzles
         private void PrintShippingAddress(XGraphics graphics, string[] addressBlock)
         {
             for (int i = 0; i < addressBlock.Length; i++)
-                graphics.DrawString(addressBlock[i], new XFont("Verdana", 12), XBrushes.Black, new XRect(390.0d, (45.0d + i * 12.0d), 100.0d, 0.0d));
+                graphics.DrawString(addressBlock[i], new XFont("Verdana", 12), XBrushes.Black, new XRect(390.0d, (50.0d + i * 12.0d), 100.0d, 0.0d));
         }
         private void PrintLineItem(XGraphics graphics, int itemNumber, LineItem item)
         {
             double startPosition = 125.0d + (itemNumber * 100.0d);
             int leftRight = itemNumber % 2;
-            PrintSkuBarcode(graphics, item.LineProduct.FullSku, (leftRight == 0) ? 30.0d : 390.0d,  startPosition + 10.0d);
-            PrintLineQuantity(graphics, item.LineProduct.Quantity, startPosition);
+            if (item.Fulfilled) PrintFulfilled(graphics, item.LineProduct.Quantity, item.LineProduct.FullSku, (leftRight == 0) ? 30.0d : 390.0d, startPosition + 10.0d);
+            else PrintSkuBarcode(graphics, item.LineProduct.FullSku, (leftRight == 0) ? 30.0d : 390.0d,  startPosition + 10.0d);
+            PrintLineQuantity(graphics, item.LineProduct.Quantity, startPosition, item.Fulfilled);
             PrintLineSummary(graphics, item.LineProduct.FullSku, item.LineProduct.ItemTitle, item.LineProduct.ItemName, item.LineProduct.PuzzleSize[item.LineProduct.Size], 
                 (leftRight == 0) ? 390.0d : 30.0d, startPosition);
             graphics.DrawLine(new XPen(XColors.Black, 2), 10.0d, startPosition + 100.0d, 605.0d, startPosition + 100.0d);
+        }
+        private void PrintFulfilled(XGraphics graphics, int quantity, string sku, double xPos, double yPos)
+        {
+            graphics.DrawString("FULLFILLED", new XFont("Verdana", 32), XBrushes.Black, new XRect(xPos, yPos + 10.0d, 150.0d, 0.0d), XStringFormats.Center);
+            graphics.DrawString(String.Format("QTY: {0}", quantity.ToString()), new XFont("Verdana", 24), XBrushes.Black, new XRect(xPos, yPos + 40.0d, 150.0d, 0.0d), XStringFormats.Center);
+            graphics.DrawString(sku, new XFont("Verdana", 10), XBrushes.Black, new XRect(xPos, yPos + 65.0d, 100.0d, 0.0d), XStringFormats.Center);
         }
         private void PrintSkuBarcode(XGraphics graphics, string sku, double xPos, double yPos)
         {
@@ -115,10 +122,11 @@ namespace CinemaPuzzles
             graphics.DrawBarCode(barcode, XBrushes.Black, new XPoint(xPos, yPos));
             graphics.DrawString(sku, new XFont("Verdana", 10), XBrushes.Black, new XRect(xPos, yPos + 65.0d, 100.0d, 0.0d), XStringFormats.Center);
         }
-        private void PrintLineQuantity(XGraphics graphics, int quantity, double startPosition)
+        private void PrintLineQuantity(XGraphics graphics, int quantity, double startPosition, bool fulfilled)
         {
             graphics.DrawString("Quantity:", new XFont("Verdana", 12), XBrushes.Black, new XRect(250.0d, startPosition + 25.0d, 100.0d, 0.0d), XStringFormats.Center);
-            graphics.DrawString(quantity.ToString(), new XFont("Verdana", 24), XBrushes.Black, new XRect(250.0d, startPosition + 60.0d, 100.0d, 0.0d), XStringFormats.Center);
+            if(fulfilled) graphics.DrawString("0", new XFont("Verdana", 24), XBrushes.Black, new XRect(250.0d, startPosition + 60.0d, 100.0d, 0.0d), XStringFormats.Center);
+            else graphics.DrawString(quantity.ToString(), new XFont("Verdana", 24), XBrushes.Black, new XRect(250.0d, startPosition + 60.0d, 100.0d, 0.0d), XStringFormats.Center);
         }
         private void PrintLineSummary(XGraphics graphics, string sku, string itemTitle, string itemName, string sizeString, double xPos, double yPos)
         {

@@ -26,14 +26,14 @@ namespace CinemaPuzzles
             StreamReader sReader = new StreamReader(csvPath);
             List<LineItem> lines = new List<LineItem>();
             string[] headers = sReader.ReadLine().Split(",");
-            if (headers.Length != 30) Logger.ErrorExit(["Header row not formatted properly."], 399);
+            if (headers.Length != 32) Logger.ErrorExit(["Header row not formatted properly.", headers.Length.ToString()], 399);
             while (!sReader.EndOfStream)
             {
                 string[] splitRow = sReader.ReadLine().Split(",");
                 for (int i = 0; i < splitRow.Length; i++) splitRow[i] = splitRow[i].Replace("\"", "");
 
-                if (splitRow[15] != "Line Item") { Logger.WriteLog(splitRow[15], false); continue; }
-                else if (splitRow.Length != 30 || !Int32.TryParse(splitRow[18], out _))
+                if (splitRow[15] != "Line Item") continue;
+                else if (splitRow.Length != 32 || !Int32.TryParse(splitRow[18], out _))
                 {
                     Logger.WriteLog("Found bad row.", false);
                     ErrorRows.Add(splitRow);

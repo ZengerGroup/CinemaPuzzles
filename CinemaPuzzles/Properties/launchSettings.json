@@ -2,7 +2,7 @@
   "profiles": {
     "CinemaPuzzles": {
       "commandName": "Project",
-      "commandLineArgs": "\"C:\\Code\\TestingFS\\CinemaPuzzles\\Input\\Orders_2026-05-12_154141.csv\""
+      "commandLineArgs": "\"C:\\Code\\TestingFS\\CinemaPuzzles\\Input\\CinemaPuzzlesExport_2026-05-18_081300.csv\""
     }
   }
 }
