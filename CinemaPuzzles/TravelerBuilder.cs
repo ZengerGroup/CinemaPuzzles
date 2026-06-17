@@ -17,13 +17,16 @@ namespace CinemaPuzzles
 {
     internal class TravelerBuilder
     {
+        string JobNumber;
         //New constructor.
-        public TravelerBuilder(Order[] orders)
+        public TravelerBuilder(Order[] orders, string jobNumber)
         {
+            JobNumber = jobNumber;
             for(int i = 0; i < orders.Length; i++) if (!GenerateIndividualTraveler(orders[i])) Logger.WriteLog("Failed to generate traveler for order # {0}", false, orders[i].OrderNumber);
             if(!AssembleTravelers()) Logger.WriteLog("Failed to assemble pdfs.", false);
+            if (!GenerateCoverSheet(orders)) Logger.WriteLog("Failed to generate cover sheet.", false);
         }
-        //New top level functionality.
+        //Top level functionality.
         private bool GenerateIndividualTraveler(Order order)
         {
             PdfDocument document = new PdfDocument();
@@ -69,7 +72,25 @@ namespace CinemaPuzzles
                 return false;
             }
         }
-        //New draw functions
+        private bool GenerateCoverSheet(Order[] orders)
+        {
+            try
+            {
+                PdfDocument coverDocument = new PdfDocument();
+                coverDocument.AddPage(new PdfPage());
+                XGraphics graphics = XGraphics.FromPdfPage(coverDocument.Pages[^1]);
+                PrintCoverHeader(graphics);
+                PrintCoverData(graphics);
+                PrintCoverSummary(graphics, orders);
+                coverDocument.Save(Path.Combine(Configurator.TravelerOutput, String.Format("CinemaPuzzlesCover_{0}.pdf", DateTime.Now.ToString("MMddyy"))));
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        //Traveler draw functions
         private void PrintPage(PdfDocument document, Order order, int pageNumber, int pageCount, LineItem[] lineItems)
         {
             document.AddPage(new PdfPage());
@@ -79,8 +100,9 @@ namespace CinemaPuzzles
         }
         private void PrintHeader(XGraphics graphics, Order order, int pageNumber, int pageCount)
         {
-            graphics.DrawString("Cinema Puzzles Batch", new XFont("Verdana", 18), XBrushes.Black, new XRect(25.0d, 50.0d, 160.0d, 0.0d));
-            graphics.DrawString(DateTime.Now.ToString("d"), new XFont("Verdana", 18), XBrushes.Black, new XRect(25.0d, 70.0d, 160.0d, 0.0d), XStringFormats.Center);
+            graphics.DrawString(String.Format("Job # {0}", JobNumber), new XFont("Verdana", 18), XBrushes.Black, new XRect(25.0d, 45.0d, 160.0d, 0.0d), XStringFormats.Center);
+            graphics.DrawString("Cinema Puzzles Batch", new XFont("Verdana", 18), XBrushes.Black, new XRect(25.0d, 70.0d, 160.0d, 0.0d));
+            graphics.DrawString(DateTime.Now.ToString("d"), new XFont("Verdana", 18), XBrushes.Black, new XRect(25.0d, 90.0d, 160.0d, 0.0d), XStringFormats.Center);
             graphics.DrawString(String.Format("Page {0} of {1}", pageNumber + 1, pageCount), new XFont("Verdana", 18), XBrushes.Black, new XRect(390.0d, 30.0d, 100.0d, 0.0d));
             PrintShippingAddress(graphics, order.LineItems[0].OrderAddress.GenerateAddressBlock());
             PrintOrderBarcode(graphics, order.OrderNumber);
@@ -88,9 +110,9 @@ namespace CinemaPuzzles
         }
         private void PrintOrderBarcode(XGraphics graphics, string orderNumber)
         {
-            Code3of9Standard barcode = new Code3of9Standard(orderNumber, new XSize(100, 50), CodeDirection.LeftToRight);
-            graphics.DrawString(String.Format("Order # {0}", orderNumber), new XFont("Verdana", 18), XBrushes.Black, new XRect(250.0d, 30.0d, 100.0d, 0.0d), XStringFormats.Center);
-            graphics.DrawBarCode(barcode, XBrushes.Black, new XPoint(250.0d, 55.0d));
+            Code3of9Standard barcode = new Code3of9Standard(orderNumber.Replace("#", "/C"), new XSize(100, 50), CodeDirection.LeftToRight);
+            graphics.DrawString(String.Format("Order {0}", orderNumber), new XFont("Verdana", 18), XBrushes.Black, new XRect(250.0d, 20.0d, 100.0d, 0.0d), XStringFormats.Center);
+            graphics.DrawBarCode(barcode, XBrushes.Black, new XPoint(250.0d, 40.0d));
         }
         private void PrintShippingAddress(XGraphics graphics, string[] addressBlock)
         {
@@ -118,9 +140,9 @@ namespace CinemaPuzzles
         {
             sku = sku.ToUpper();
             string SKU = sku.Replace("_", "%O");
-            Code3of9Standard barcode = new Code3of9Standard(SKU, new XSize(150, 50), CodeDirection.LeftToRight);
-            graphics.DrawBarCode(barcode, XBrushes.Black, new XPoint(xPos, yPos));
-            graphics.DrawString(sku, new XFont("Verdana", 10), XBrushes.Black, new XRect(xPos, yPos + 65.0d, 100.0d, 0.0d), XStringFormats.Center);
+            Code3of9Standard barcode = new Code3of9Standard(SKU, new XSize(200, 50), CodeDirection.LeftToRight);
+            graphics.DrawBarCode(barcode, XBrushes.Black, new XPoint(xPos, yPos + 15.0d));
+            graphics.DrawString(sku, new XFont("Verdana", 10), XBrushes.Black, new XRect(xPos, yPos + 75.0d, 100.0d, 0.0d), XStringFormats.Center);
         }
         private void PrintLineQuantity(XGraphics graphics, int quantity, double startPosition, bool fulfilled)
         {
@@ -141,6 +163,31 @@ namespace CinemaPuzzles
                 graphics.DrawString(sizeString, new XFont("Verdana", 12), XBrushes.Black, new XRect(xPos, yPos + 75.0d, 100.0d, 0.0d));
             }
             
+        }
+        //Cover sheet draw functions.
+        private void PrintCoverHeader(XGraphics graphics) 
+        {
+            graphics.DrawString(String.Format("Job # {0}", JobNumber), new XFont("Verdana", 32), XBrushes.Black, new XRect(250.0d, 50.0d, 160.0d, 0.0d), XStringFormats.Center);
+            graphics.DrawString("Cinema Puzzles Batch", new XFont("Verdana", 32), XBrushes.Black, new XRect(250.0d, 80.0d, 160.0d, 0.0d), XStringFormats.Center);
+            graphics.DrawString(DateTime.Now.ToString("d"), new XFont("Verdana", 32), XBrushes.Black, new XRect(250.0d, 110.0d, 160.0d, 0.0d), XStringFormats.Center);
+        }
+        private void PrintCoverData(XGraphics graphics)
+        {
+            graphics.DrawString(String.Format("Batch_Puzzles_{0}", DateTime.Now.ToString("MMddyy")), new XFont("Verdana", 32), XBrushes.Black, new XRect(250.0d, 250.0d, 160.0d, 0.0d), XStringFormats.Center);
+            graphics.DrawString(String.Format("Batch_Posters_{0}", DateTime.Now.ToString("MMddyy")), new XFont("Verdana", 32), XBrushes.Black, new XRect(250.0d, 280.0d, 160.0d, 0.0d), XStringFormats.Center);
+            graphics.DrawString(String.Format("Batch_Sleeves_{0}", DateTime.Now.ToString("MMddyy")), new XFont("Verdana", 32), XBrushes.Black, new XRect(250.0d, 310.0d, 160.0d, 0.0d), XStringFormats.Center);
+        }
+        private void PrintCoverSummary(XGraphics graphics, Order[] orders)
+        {
+            int puzzleCount = GetPuzzleCount(orders);
+            graphics.DrawString(String.Format("Total Orders: {0}", orders.Length), new XFont("Verdana", 32), XBrushes.Black, new XRect(250.0d, 350.0d, 160.0d, 0.0d), XStringFormats.Center);
+            graphics.DrawString(String.Format("Total Puzzles: {0}", puzzleCount), new XFont("Verdana", 32), XBrushes.Black, new XRect(250.0d, 380.0d, 160.0d, 0.0d), XStringFormats.Center);
+        }
+        private int GetPuzzleCount(Order[] orders)
+        {
+            int count = 0;
+            for (int i = 0; i < orders.Length; i++) for (int ii = 0; ii < orders[i].LineItems.Length; ii++) count += orders[i].LineItems[ii].LineProduct.Quantity;
+            return count;
         }
     }
 }

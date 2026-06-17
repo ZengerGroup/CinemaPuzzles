@@ -7,6 +7,7 @@ namespace CinemaPuzzles
     {
         static void Main(string[] args)
         {
+            Logger.WriteLog("Starting days batch.", false);
             //System Setup
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
             GlobalFontSettings.FontResolver = new FailsafeFontResolver();
@@ -14,9 +15,9 @@ namespace CinemaPuzzles
             Batch DaysBatch = new Batch(args[0]);
             //Generate 'Traveler' type file
             //TravelerBuilder fooBuilder = new TravelerBuilder(false);
-            TravelerBuilder barBuilder = new TravelerBuilder(DaysBatch.Orders);
+            TravelerBuilder TBuilder = new TravelerBuilder(DaysBatch.Orders, args[1]);
             //Generate report csvs and send email.
-            ReportBuilder repBuilder = new ReportBuilder(DaysBatch.Orders, DaysBatch.Products.ToArray() );
+            ReportBuilder RBuilder = new ReportBuilder(DaysBatch.Orders, DaysBatch.Products.ToArray(), args[1]);
         }
     }
 }

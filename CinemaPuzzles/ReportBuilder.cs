@@ -8,15 +8,17 @@ namespace CinemaPuzzles
 {
     internal class ReportBuilder
     {
-        public ReportBuilder(Order[] orders, Product[] products )
+        public string JobNumber;
+        public ReportBuilder(Order[] orders, Product[] products, string jobNumber)
         {
+            JobNumber = jobNumber;
             BuildOrderReport(orders);
             BuildProductReport(products);
         }
         private void BuildOrderReport(Order[] orders)
         {
             string headers = "Order Number,Sku,Size,Quantity" + Environment.NewLine;
-            string ReportPath = Path.Combine(Configurator.ReportPath, String.Format("CinemaPuzzleOrders_{0}.csv", DateTime.Now.ToString("MMddyy")));
+            string ReportPath = Path.Combine(Configurator.ReportPath, String.Format("{0}_CinemaPuzzleOrders_{1}.csv", JobNumber, DateTime.Now.ToString("MMddyy")));
             File.AppendAllText(ReportPath, headers);
             for(int i = 0; i < orders.Length; i++)
             {
@@ -31,7 +33,7 @@ namespace CinemaPuzzles
         private void BuildProductReport(Product[] products)
         {
             string headers = "Sku,Quantity" + Environment.NewLine;
-            string ReportPath = Path.Combine(Configurator.ReportPath, String.Format("CinemaPuzzleProducts_{0}.csv", DateTime.Now.ToString("MMddyy")));
+            string ReportPath = Path.Combine(Configurator.ReportPath, String.Format("{0}_CinemaPuzzleProducts_{1}.csv", JobNumber, DateTime.Now.ToString("MMddyy")));
             File.AppendAllText(ReportPath, headers);
             for (int i = 0; i < products.Length; i++)
                 File.AppendAllText(ReportPath, String.Format("{0},{1}{2}", products[i].FullSku, products[i].Quantity, Environment.NewLine));
