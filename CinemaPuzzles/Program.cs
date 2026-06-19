@@ -7,7 +7,7 @@ namespace CinemaPuzzles
     {
         static void Main(string[] args)
         {
-            Logger.WriteLog("Starting days batch.", false);
+            Logger.WriteLog("Starting days batch.", true);
             //System Setup
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
             GlobalFontSettings.FontResolver = new FailsafeFontResolver();

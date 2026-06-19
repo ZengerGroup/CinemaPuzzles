@@ -19,7 +19,8 @@ namespace CinemaPuzzles
             if (!File.Exists(csvPath)) Logger.ErrorExit(["Unable to access CSV file."], 400);
             Products = new List<Product>();
             ErrorRows = new List<string[]>();
-            Orders = GetOrderArray(csvPath);
+            ArchiveChecker Checker = new ArchiveChecker(GetOrderArray(csvPath));
+            Orders = Checker.GetOrders();
         }
 
         private Order[] GetOrderArray(string csvPath)
@@ -32,15 +33,17 @@ namespace CinemaPuzzles
             Logger.WriteLog("Starting to read export.", false);
             while (!sReader.EndOfStream)
             {
-                //string[] splitRow = sReader.ReadLine().Split(",");
                 string[] splitRow = SplitRow(sReader.ReadLine());
                 for (int i = 0; i < splitRow.Length; i++) splitRow[i] = splitRow[i].Replace("\"", "");
                 if (splitRow.Length != 32 || !Int32.TryParse(splitRow[18], out _))
                 {
+                    for (int i = 0; i < splitRow.Length; i++) Logger.WriteLog(splitRow[i], false);
                     Logger.WriteLog("Found bad row. {0} - {1}", false, splitRow[0], splitRow[13]);
                     ErrorRows.Add(splitRow);
                     continue;
                 }
+                Logger.WriteLog("Row is not bad", false);
+                
                 if (splitRow[15] == "Line Item")
                 {
                     if (splitRow[17].Split('_').Length != 3) continue;
@@ -57,7 +60,6 @@ namespace CinemaPuzzles
                     refunds.Add(refundItem);
                     AddProduct(refundItem.LineProduct);
                 }
-                Logger.WriteLog("Finished reading export.", false);
             }
             sReader.Close();
             return ParseOrders(ProcessRefunds(lines, refunds));

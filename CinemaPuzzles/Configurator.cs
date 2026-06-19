@@ -14,5 +14,6 @@ namespace CinemaPuzzles
         public static string TravelerAssembly = ConfigurationManager.AppSettings["TravelerAssembly"];
         public static string TravelerOutput = ConfigurationManager.AppSettings["TravelerOutput"];
         public static string ReportPath = ConfigurationManager.AppSettings["ReportPath"];
+        public static string ArchivePath = ConfigurationManager.AppSettings["ArchivePath"];
     }
 }
