@@ -9,14 +9,22 @@ namespace CinemaPuzzles
     internal class ArchiveChecker
     {
         private List<Order> FilteredOrders;
+        private List<Order> RemovedOrders;
         public ArchiveChecker(Order[] unfilteredOrders)
         {
             FilteredOrders = unfilteredOrders.ToList<Order>();
+            RemovedOrders = new List<Order>();
             CheckArchives();
         }
         public Order[] GetOrders()
         {
             return FilteredOrders.ToArray();
+        }
+        public List<Product> GetProducts(List<Product> products)
+        {
+            for (int i = 0; i < RemovedOrders.Count; i++) foreach (LineItem item in RemovedOrders[i].LineItems) foreach (Product product in products)
+                    if (item.LineProduct.FullSku == product.FullSku) product.Quantity -= item.LineProduct.Quantity;
+            return products;
         }
         private void CheckArchives()
         {
@@ -59,8 +67,12 @@ namespace CinemaPuzzles
                         ToRemove.Add(FilteredOrders[ii]);
                     }
                 }
-                    
-            for (int i = 0; i < ToRemove.Count; i++) FilteredOrders.Remove(ToRemove[i]);
+
+            for (int i = 0; i < ToRemove.Count; i++)
+            {
+                FilteredOrders.Remove(ToRemove[i]);
+                RemovedOrders.Add(ToRemove[i]);
+            }
         }
     }
 }

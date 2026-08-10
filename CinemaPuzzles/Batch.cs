@@ -21,6 +21,7 @@ namespace CinemaPuzzles
             ErrorRows = new List<string[]>();
             ArchiveChecker Checker = new ArchiveChecker(GetOrderArray(csvPath));
             Orders = Checker.GetOrders();
+            Products = Checker.GetProducts(Products);
         }
 
         private Order[] GetOrderArray(string csvPath)
@@ -37,10 +38,18 @@ namespace CinemaPuzzles
                 for (int i = 0; i < splitRow.Length; i++) splitRow[i] = splitRow[i].Replace("\"", "");
                 if (splitRow.Length != 32 || !Int32.TryParse(splitRow[18], out _))
                 {
-                    for (int i = 0; i < splitRow.Length; i++) Logger.WriteLog(splitRow[i], false);
-                    Logger.WriteLog("Found bad row. {0} - {1}", false, splitRow[0], splitRow[13]);
-                    ErrorRows.Add(splitRow);
-                    continue;
+                    try
+                    {
+                        for (int i = 0; i < splitRow.Length; i++) Logger.WriteLog(splitRow[i], false);
+                        Logger.WriteLog("Found bad row. {0} - {1}", false, splitRow[0], splitRow[13]);
+                        ErrorRows.Add(splitRow);
+                        continue;
+                    }
+                    catch
+                    {
+                        Logger.ErrorExit(["Row is not formatted correctly."], 300);
+                    }
+                    
                 }
                 Logger.WriteLog("Row is not bad", false);
                 
