@@ -36,7 +36,7 @@ namespace CinemaPuzzles
             string ReportPath = Path.Combine(Configurator.ReportPath, String.Format("{0}_CinemaPuzzleProducts_{1}.csv", JobNumber, DateTime.Now.ToString("MMddyy")));
             File.AppendAllText(ReportPath, headers);
             for (int i = 0; i < products.Length; i++)
-                File.AppendAllText(ReportPath, String.Format("{0},{1}{2}", products[i].FullSku, products[i].Quantity, Environment.NewLine));
+                if(products[i].Quantity > 0) File.AppendAllText(ReportPath, String.Format("{0},{1}{2}", products[i].FullSku, products[i].Quantity, Environment.NewLine));
         }
         Dictionary<string, string> PuzzleSize = new Dictionary<string, string>()
         {
