@@ -8,6 +8,11 @@ namespace CinemaPuzzles
         static void Main(string[] args)
         {
             Logger.WriteLog("Starting days batch.", true);
+            if (args.Length != 2)
+            {
+                Logger.ErrorExit(["Missing arguments."], 10);
+            }
+            else Logger.JobNumber = args[1];
             //System Setup
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
             GlobalFontSettings.FontResolver = new FailsafeFontResolver();

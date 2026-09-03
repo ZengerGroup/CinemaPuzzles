@@ -44,6 +44,7 @@ namespace CinemaPuzzles
             catch (Exception e)
             {
                 Logger.WriteLog(e.Message, false);
+                Logger.GenerateIssueJson(JobNumber, String.Format("Failed to generate traveler: {0}", order.OrderNumber), "Error");
                 return false;
             }
         }
@@ -69,6 +70,7 @@ namespace CinemaPuzzles
             catch (Exception e)
             {
                 Logger.WriteLog(e.Message, false);
+                Logger.GenerateIssueJson(JobNumber, "Failed to combine Travelers", "Error");
                 return false;
             }
         }
@@ -87,6 +89,7 @@ namespace CinemaPuzzles
             }
             catch
             {
+                Logger.GenerateIssueJson(JobNumber, "Failed to generate cover sheet.", "Warning");
                 return false;
             }
         }

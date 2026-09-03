@@ -18,12 +18,14 @@ namespace CinemaPuzzles
         }
         public Order[] GetOrders()
         {
+            if (FilteredOrders.Count == 0) Logger.GenerateIssueJson(Logger.JobNumber, "No orders in batch.", "Warning");
             return FilteredOrders.ToArray();
         }
         public List<Product> GetProducts(List<Product> products)
         {
             for (int i = 0; i < RemovedOrders.Count; i++) foreach (LineItem item in RemovedOrders[i].LineItems) foreach (Product product in products)
                     if (item.LineProduct.FullSku == product.FullSku) product.Quantity -= item.LineProduct.Quantity;
+            if (products.Count == 0) Logger.GenerateIssueJson(Logger.JobNumber, "No products in batch.", "Warning");
             return products;
         }
         private void CheckArchives()
