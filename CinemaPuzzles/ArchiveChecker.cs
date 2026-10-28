@@ -14,6 +14,7 @@ namespace CinemaPuzzles
         {
             FilteredOrders = unfilteredOrders.ToList<Order>();
             RemovedOrders = new List<Order>();
+            if (FilteredOrders.Count == 0) Logger.WriteLog("No orders found, somehow.", false);
             CheckArchives();
         }
         public Order[] GetOrders()
@@ -30,7 +31,9 @@ namespace CinemaPuzzles
         }
         private void CheckArchives()
         {
+            Logger.WriteLog("Checking archives.", false);
             string[] archivedExports = Directory.GetFiles(Configurator.ArchivePath);
+            Logger.WriteLog("Found {0} archived order exports to check.", false, archivedExports.Length.ToString());
             for (int i = 0; i < archivedExports.Length; i++)
             {
                 if (IsTodaysBatch(archivedExports[i])) continue;
@@ -47,11 +50,13 @@ namespace CinemaPuzzles
         {
             List<string> orderList = new List<string>();
             string[] rows = File.ReadAllLines(exportPath);
+            Logger.WriteLog("Found {0} rows in {1}.", false, rows.Length.ToString(), Path.GetFileName(exportPath));
             for (int i = 1; i < rows.Length; i++)
             {
                 if (rows[i].Split(",").Length > 0)
                 {
                     string orderNum = rows[i].Split(",")[0];
+                    Logger.WriteLog("Order Number: {0}", false, orderNum);
                     if(!orderList.Contains(orderNum))orderList.Add(orderNum.Replace("\"",""));
                 }
                 else continue;
@@ -66,6 +71,7 @@ namespace CinemaPuzzles
                 {
                     if (archivedOrders[i] == FilteredOrders[ii].OrderNumber)
                     {
+                        Logger.WriteLog("Order number {0} will not be processed.", false, archivedOrders[i]);
                         ToRemove.Add(FilteredOrders[ii]);
                     }
                 }

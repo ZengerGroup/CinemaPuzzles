@@ -36,7 +36,7 @@ namespace CinemaPuzzles
             {
                 string[] splitRow = SplitRow(sReader.ReadLine());
                 for (int i = 0; i < splitRow.Length; i++) splitRow[i] = splitRow[i].Replace("\"", "");
-                if (splitRow.Length != 32 || !Int32.TryParse(splitRow[18], out _))
+                if (splitRow.Length != 33 || !Int32.TryParse(splitRow[18], out _))
                 {
                     try
                     {
@@ -49,13 +49,11 @@ namespace CinemaPuzzles
                     {
                         Logger.ErrorExit(["Row is not formatted correctly."], 300);
                     }
-                    
                 }
-                Logger.WriteLog("Row is not bad", false);
                 
                 if (splitRow[15] == "Line Item")
                 {
-                    if (splitRow[17].Split('_').Length != 3) continue;
+                    if (splitRow[33].Split('_').Length != 3) continue;
                     Logger.WriteLog("Found line item", false);
                     LineItem lineItem = new LineItem(splitRow);
                     lines.Add(lineItem);
