@@ -53,7 +53,7 @@ namespace CinemaPuzzles
                 
                 if (splitRow[15] == "Line Item")
                 {
-                    if (splitRow[33].Split('_').Length != 3) continue;
+                    if (splitRow[32].Split('_').Length != 3) continue;
                     Logger.WriteLog("Found line item", false);
                     LineItem lineItem = new LineItem(splitRow);
                     lines.Add(lineItem);

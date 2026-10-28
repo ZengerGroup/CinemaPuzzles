@@ -21,7 +21,7 @@ namespace CinemaPuzzles
             string qty = (splitRow[30] == "partial") ? splitRow[31] : splitRow[18];
             LineId = splitRow[16];
             Fulfilled = (splitRow[30].ToLower() == "fulfilled");
-            LineProduct = new Product(splitRow[33], Int32.Parse(qty), splitRow[19], splitRow[20]);
+            LineProduct = new Product(splitRow[32], Int32.Parse(qty), splitRow[19], splitRow[20]);
             OrderAddress = new Address(name, splitRow[5], splitRow[6], splitRow[7], splitRow[8], splitRow[9], splitRow[10], splitRow[11]);
         }
     }
@@ -59,3 +59,4 @@ namespace CinemaPuzzles
 //"ID"                          29
 //"Line: Fulfillment Status"    30
 //"Line: Fulfillable Quantity"  31
+//"Line: Variant Sku"           32
