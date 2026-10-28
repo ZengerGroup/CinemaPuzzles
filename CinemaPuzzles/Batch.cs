@@ -30,7 +30,7 @@ namespace CinemaPuzzles
             List<LineItem> lines = new List<LineItem>();
             List<LineItem> refunds = new List<LineItem>();
             string[] headers = sReader.ReadLine().Split(",");
-            if (headers.Length != 32) Logger.ErrorExit(["Header row not formatted properly.", headers.Length.ToString()], 399);
+            if (headers.Length != 33) Logger.ErrorExit(["Header row not formatted properly.", headers.Length.ToString()], 399);
             Logger.WriteLog("Starting to read export.", false);
             while (!sReader.EndOfStream)
             {
@@ -38,23 +38,19 @@ namespace CinemaPuzzles
                 for (int i = 0; i < splitRow.Length; i++) splitRow[i] = splitRow[i].Replace("\"", "");
                 if (splitRow.Length != 33 || !Int32.TryParse(splitRow[18], out _))
                 {
-                    try
-                    {
-                        for (int i = 0; i < splitRow.Length; i++) Logger.WriteLog(splitRow[i], false);
-                        Logger.WriteLog("Found bad row. {0} - {1}", false, splitRow[0], splitRow[13]);
-                        ErrorRows.Add(splitRow);
-                        continue;
-                    }
-                    catch
-                    {
-                        Logger.ErrorExit(["Row is not formatted correctly."], 300);
-                    }
+                    string errorMessage;
+                    sReader.Close();
+                    if (splitRow.Length != 33) errorMessage = String.Format("Order # {0}, found bad row. Please check file in the archive and resubmit.", splitRow[0]);
+                    else errorMessage = String.Format("Order # {0}, quantity value is invalid. Please check file in the archive and resubmit.", splitRow[0]);
+                    Logger.ErrorExit([errorMessage], 300);
                 }
-                
                 if (splitRow[15] == "Line Item")
                 {
-                    if (splitRow[32].Split('_').Length != 3) continue;
-                    Logger.WriteLog("Found line item", false);
+                    if (splitRow[32].Split('_').Length != 3)
+                    {
+                        sReader.Close();
+                        Logger.ErrorExit([String.Format("Order # {0}, found bad SKU - {1}", splitRow[0], splitRow[32])], 303);
+                    }
                     LineItem lineItem = new LineItem(splitRow);
                     lines.Add(lineItem);
                     AddProduct(lineItem.LineProduct);
@@ -62,7 +58,6 @@ namespace CinemaPuzzles
                 else if (splitRow[15] == "Refund Line")
                 {
                     if (splitRow[18] == "" || splitRow[18] == "0") continue;
-                    Logger.WriteLog("Found refund line", false);
                     LineItem refundItem = new LineItem(splitRow);
                     refunds.Add(refundItem);
                     AddProduct(refundItem.LineProduct);

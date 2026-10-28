@@ -155,8 +155,6 @@ namespace CinemaPuzzles
         }
         private void PrintLineSummary(XGraphics graphics, string sku, string itemTitle, string itemName, string sizeString, double xPos, double yPos)
         {
-            Logger.WriteLog("Printing summary", false);
-            Logger.WriteLog("{0} - {1} - {2} - {3}", false, sku, itemTitle, itemName, sizeString);
             graphics.DrawString(sku, new XFont("Verdana", 12), XBrushes.Black, new XRect(xPos, yPos + 30.0d, 100.0d, 0.0d));
             graphics.DrawString(itemTitle, new XFont("Verdana", 12), XBrushes.Black, new XRect(xPos, yPos + 45.0d, 100.0d, 0.0d));
             if(itemTitle == itemName) graphics.DrawString(sizeString, new XFont("Verdana", 12), XBrushes.Black, new XRect(xPos, yPos + 60.0d, 100.0d, 0.0d));

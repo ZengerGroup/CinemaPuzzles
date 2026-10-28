@@ -14,7 +14,6 @@ namespace CinemaPuzzles
         {
             FilteredOrders = unfilteredOrders.ToList<Order>();
             RemovedOrders = new List<Order>();
-            if (FilteredOrders.Count == 0) Logger.WriteLog("No orders found, somehow.", false);
             CheckArchives();
         }
         public Order[] GetOrders()

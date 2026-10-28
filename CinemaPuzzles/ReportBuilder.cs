@@ -17,7 +17,7 @@ namespace CinemaPuzzles
         }
         private void BuildOrderReport(Order[] orders)
         {
-            string headers = "Order Number,Sku,Size,Quantity" + Environment.NewLine;
+            string headers = "Order Number,Variant Sku,Size,Quantity" + Environment.NewLine;
             string ReportPath = Path.Combine(Configurator.ReportPath, String.Format("{0}_CinemaPuzzleOrders_{1}.csv", JobNumber, DateTime.Now.ToString("MMddyy")));
             File.AppendAllText(ReportPath, headers);
             for(int i = 0; i < orders.Length; i++)
@@ -32,7 +32,7 @@ namespace CinemaPuzzles
         }
         private void BuildProductReport(Product[] products)
         {
-            string headers = "Sku,Quantity" + Environment.NewLine;
+            string headers = "Variant Sku,Quantity" + Environment.NewLine;
             string ReportPath = Path.Combine(Configurator.ReportPath, String.Format("{0}_CinemaPuzzleProducts_{1}.csv", JobNumber, DateTime.Now.ToString("MMddyy")));
             File.AppendAllText(ReportPath, headers);
             for (int i = 0; i < products.Length; i++)
